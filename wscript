@@ -19,7 +19,7 @@ def configure(conf):
 
 def build(bld):
     bld.program (
-        target = 'test-main',
+        target = 'uni_test-main',
         source = [
             'src/test/test-bytewise.cpp',
             'src/test/test-uni.cpp',
