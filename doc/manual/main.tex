@@ -1,0 +1,91 @@
+%\documentclass[oneside, DIV=11, BCOR=10mm]{scrbook}
+\documentclass[oneside]{scrbook}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{xspace}
+\usepackage{cite}
+\usepackage[xindy,toc]{glossaries}
+\usepackage{todonotes}
+\usepackage{units}
+\usepackage{xstring}
+\usepackage[round,colon]{natbib}
+\usepackage[activate={true,nocompatibility}]{microtype}
+% code listings
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{url}
+\usepackage{bytefield}
+\usepackage{algpseudocode}
+\lstset{
+    basicstyle=\footnotesize\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    %stepnumber=5,
+    numbersep=5pt,
+    tabsize=2,
+    breaklines=true,
+    xleftmargin=17pt,
+    framexleftmargin=17pt,
+    framexrightmargin=5pt,
+    framexbottommargin=4pt
+}
+\lstloadlanguages{c}
+% clickable links
+\usepackage[
+  pdftex,
+  pdfauthor={Simon Friedmann},
+  pdftitle={Plasticity Processor User Guide}
+]{hyperref}
+\hypersetup{
+  hidelinks=true,
+  colorlinks=false,
+  urlcolor=black,
+  linkcolor=black,
+  citecolor=black
+}
+% font selection
+\usepackage{mathpazo}
+\usepackage[scaled]{berasans}
+\usepackage{courier}
+
+\title{Universal Neuromorphic Instruction set}
+\author{Simon Friedmann}
+
+%
+% Glossaries
+%
+\makeglossaries
+\loadglsentries{src/glossaries.tex}
+
+%
+% custom macros
+%
+
+% template to typeset identifiers from code containing _ and :: characters
+\newcommand{\code}[1]{\texttt{%
+    \noexpandarg %
+    \StrSubstitute{#1}{_}{\textunderscore}[\x]%
+    \expandafter\StrSubstitute\expandafter{\x}{::}{$\dblcolon$}[\x]%
+    \x}\xspace}
+
+% template for file references
+\newcommand{\file}[1]{\path{#1}\xspace}
+
+
+
+\begin{document}
+
+	\maketitle
+    \tableofcontents
+
+    \input{src/intro.tex}
+    \input{src/isa.tex}
+
+    %\bibliographystyle{plainnat}
+    %\bibliography{src/bibliography}
+
+\end{document}

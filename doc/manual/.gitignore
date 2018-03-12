@@ -1,0 +1,7 @@
+*.aux
+*.glo
+*.log
+*.out
+main.pdf*
+*.toc
+*.xdy
