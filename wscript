@@ -19,6 +19,10 @@ def configure(conf):
     conf.env['CXXFLAGS_UNI'] += [ '-ggdb' ]
     conf.env['INCLUDES_UNI'] = [ 'src' ]
 
+    conf.check_cxx(mandatory=True,
+                   header_name='cereal/cereal.hpp'
+    )
+
 
 def build(bld):
     bld.program (

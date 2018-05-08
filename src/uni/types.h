@@ -4,6 +4,8 @@
 #include <bitset>
 #include <ostream>
 
+#include <cereal/cereal.hpp>
+
 namespace uni {
 
   typedef uint64_t Time;
@@ -27,6 +29,13 @@ namespace uni {
     bool operator == (Spike const& other) const {
       return (time == other.time) && (address == other.address);
     }
+
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& ar) {
+      ar(CEREAL_NVP(time));
+      ar(CEREAL_NVP(address));
+    }
   };
 
   struct MADCSample {
@@ -42,6 +51,13 @@ namespace uni {
 
     bool operator == (MADCSample const& other) const {
       return (time == other.time) && (value == other.value);
+    }
+
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& ar) {
+      ar(CEREAL_NVP(time));
+      ar(CEREAL_NVP(value));
     }
   };
 }
