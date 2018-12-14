@@ -23,6 +23,7 @@ def build(bld):
         source = [
             'src/test/test-bytewise.cpp',
             'src/test/test-uni.cpp',
+            'src/test/test-cerealization.cpp',
         ],
         features = 'gtest cxx',
         use = [ 'UNI' ],

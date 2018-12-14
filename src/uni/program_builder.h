@@ -4,6 +4,9 @@
 #include <uni/instructions.h>
 #include <uni/errors.h>
 
+#include <cereal/cereal.hpp>
+#include <cereal/types/vector.hpp>
+
 #include <vector>
 
 
@@ -150,6 +153,13 @@ namespace uni {
       }
 
 
+      bool operator==(Program_builder const& other) const {
+        return (containers == other.containers) &&
+               (m_it - m_alloc.begin(containers.back())
+               == other.m_it - other.m_alloc.begin(other.containers.back())) &&
+               (m_stop - m_alloc.begin(containers.back())
+               == other.m_stop - other.m_alloc.begin(other.containers.back()));
+      }
 
 
     protected:
@@ -167,6 +177,26 @@ namespace uni {
         m_it = m_alloc.begin(containers.back());
         m_stop = m_alloc.end(containers.back());
       }
+    private:
+      friend class cereal::access;
+
+      template <class Archive>
+      void save(Archive& ar) const {
+        ar(CEREAL_NVP(containers));
+        ar(CEREAL_NVP_("it", m_it - m_alloc.begin(containers.back())));
+        ar(CEREAL_NVP_("stop", m_stop - m_alloc.begin(containers.back())));
+      }
+
+      template <class Archive>
+      void load(Archive& ar) {
+        ar(CEREAL_NVP(containers));
+        std::ptrdiff_t diff_it;
+        ar(CEREAL_NVP_("it", diff_it));
+        m_it = m_alloc.begin(containers.back()) + diff_it;
+        std::ptrdiff_t diff_stop;
+        ar(CEREAL_NVP_("stop", diff_stop));
+        m_stop = m_alloc.begin(containers.back()) + diff_stop;
+      }
   };
 
 
@@ -182,6 +212,7 @@ namespace uni {
 
     /** Iterator type to point to current insertion location by Program_builder. */
     typedef std::vector<Byte>::iterator Iterator;
+    typedef std::vector<Byte>::const_iterator Const_iterator;
 
 
     /** Get Iterator to first byte in Container. */
@@ -191,6 +222,16 @@ namespace uni {
 
     /** Get Iterator to last byte in Container. */
     Iterator end(Container& c) {
+      return std::end(c);
+    }
+
+    /** Get const Iterator to first byte in Container. */
+    Const_iterator begin(Container const& c) const {
+      return std::begin(c);
+    }
+
+    /** Get const Iterator to last byte in Container. */
+    Const_iterator end(Container const& c) const {
       return std::end(c);
     }
 
