@@ -169,6 +169,9 @@ namespace uni {
     Instruction const& operator=(Instruction const& /*other*/) {
       return *this;
     }
+
+    /** Default copy constructor */
+    Instruction(const uni::Instruction&) = default;
   };
 
 
