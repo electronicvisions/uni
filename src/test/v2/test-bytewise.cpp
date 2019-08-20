@@ -2,7 +2,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include <uni/bytewise_output_iterator.h>
+#include <uni/v2/bytewise_output_iterator.h>
 
 TEST(bytewise, writing) {
 	using namespace uni;

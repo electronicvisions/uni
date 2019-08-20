@@ -1,6 +1,6 @@
-#include <uni/uni.h>
-#include <uni/rw_extract_decoder.h>
-#include <uni/spiketrain_decoder.h>
+#include <uni/v3/uni.h>
+#include <uni/v3/rw_extract_decoder.h>
+#include <uni/v3/spiketrain_decoder.h>
 
 #include <gtest/gtest.h>
 #include <iostream>
@@ -213,30 +213,10 @@ TEST(uni, program_builder) {
   }
 }
 
-
-TEST(uni, fire_coding) {
-  using namespace uni;
-
-  std::array<uint32_t,32> words;
-  words.fill(0);
-
-  auto p = bytewise(words.begin());
-  p = fill_fire(p, 0x1, 0x3f);
-  p = fill_fire_one(p, 0x3f, 0xaf);
-  p = fill_halt(p);
-
-  std::cout << as_bytes(words.begin(), words.end()) << std::endl;
-
-  EXPECT_EQ(0x0f000000, words[0]);
-  EXPECT_EQ(0x00000000, words[1]);
-  EXPECT_EQ(0x013f7faf, words[2]);
-  EXPECT_EQ(0x0e000000, words[3]);
-
-  for(std::size_t i=4; i<words.size(); i++)
-    EXPECT_EQ(0, words[i]);
-}
-
-TEST(uni, spiketrain_codec) {
+// Test was disabled, as there is no spike interface for v3 using the fire
+// instruction. This is not the case for v3.1. Enable as soon es spike encoding
+// is implemented vor v3.1.
+TEST(uni, DISABLED_spiketrain_codec) {
   using namespace uni;
 
   static int const num_addr = 64;
@@ -273,15 +253,15 @@ TEST(uni, spiketrain_codec) {
       printer);
 
 
-  Standard_spiketrain_decoder spike_dec;
+  Standard_spiketrain_and_madc_decoder spike_dec;
   decode(std::begin(bld.containers[0]),
       std::end(bld.containers[0]),
       spike_dec);
 
-  ASSERT_EQ(spiketrain.size(), spike_dec.extracted.size());
+  ASSERT_EQ(spiketrain.size(), spike_dec.extracted_spikes.size());
 
   for(size_t i=0; i<spiketrain.size(); ++i) {
-    EXPECT_EQ(spiketrain[i], spike_dec.extracted[i]);
+    EXPECT_EQ(spiketrain[i], spike_dec.extracted_spikes[i]);
   }
 }
 

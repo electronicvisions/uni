@@ -1,10 +1,11 @@
 #pragma once
 
-#include <uni/types.h>
-#include <uni/errors.h>
-
+#include <bitset>
 #include <string>
 #include <vector>
+
+#include "uni/v3/types.h"
+#include "uni/v3/errors.h"
 
 /** Top-level namespace for UNI */
 namespace uni {
@@ -116,21 +117,10 @@ namespace uni {
     return ++it;
   }
 
-  FILL_INST_2(fill_fire, Fire_set fire, Event_address evaddr) {
-    uint64_t tmp = fire.to_ulong();
-    *it = 0x0f;
-    ++it;
-    it = fill_data(it, tmp);
-    it = fill_data(it, evaddr);
+  FILL_INST_2(fill_fire_one, uint8_t /*idx*/, Event_address /*evaddr*/) {
+    throw Encode_error(__func__, "fire_one", "Not implemented yet for v3");
     return it;
   }
-
-  FILL_INST_2(fill_fire_one, uint8_t idx, Event_address evaddr) {
-    *it = 0x40 | (idx & 0x3f);
-    ++it;
-    return fill_data(it, evaddr);
-  }
-
 
 #undef FILL_INST_0
 #undef FILL_INST_1
@@ -169,9 +159,6 @@ namespace uni {
     Instruction const& operator=(Instruction const& /*other*/) {
       return *this;
     }
-
-    /** Default copy constructor */
-    Instruction(const uni::Instruction&) = default;
   };
 
 
@@ -267,20 +254,11 @@ namespace uni {
   };
 
 
-  struct Fire_inst : public Instruction {
-    std::bitset<64> fire;
-    Event_address evaddr;
+  struct Fire_one_or_madc_inst : public Instruction {
+    uint8_t key;
+    uint32_t payload;
 
-    Fire_inst()
-      : Instruction("fire") {
-    }
-  };
-
-  struct Fire_one_inst : public Instruction {
-    uint8_t index;
-    Event_address evaddr;
-
-    Fire_one_inst()
+    Fire_one_or_madc_inst()
       : Instruction("fire_one") {
     }
   };
@@ -342,21 +320,11 @@ namespace uni {
     return os << strm.str();
   }
 
-  inline std::ostream& operator << (std::ostream& os, Fire_inst const& inst) {
+  inline std::ostream& operator << (std::ostream& os, Fire_one_or_madc_inst const& inst) {
     std::stringstream strm;
 
-    strm << static_cast<Instruction>(inst)
-      << "  <" << inst.fire.to_string() << "> addr="
-      << std::hex << +inst.evaddr;
-    return os << strm.str();
-  }
-
-  inline std::ostream& operator << (std::ostream& os, Fire_one_inst const& inst) {
-    std::stringstream strm;
-
-    strm << static_cast<Instruction>(inst) << "  "
-      << std::setw(2) << +inst.index << " addr="
-      << std::hex << std::setfill('0') << std::setw(2) << +inst.evaddr;
+    strm << static_cast<Instruction>(inst) << " key=" << inst.key
+         << " Payload=" << std::bitset<32>(inst.payload);
     return os << strm.str();
   }
 
@@ -423,11 +391,22 @@ namespace uni {
         ++it;
       }
       return it;)
-  READ_INST(fire, Fire_inst, 0x0f,
+// The following implementation differs from the original definition of the
+// fire_one opcode. This is a work around of #2468.
+  READ_INST(fire_one, Fire_one_or_madc_inst, 0x0f,
       uint64_t tmp;
       it = read_data(++it, tmp);
-      inst.fire = tmp;
-      inst.evaddr = *it;
+      inst.key = (tmp >> 30) & 0x3; // 2 MSB decode if spike or number of samples
+      inst.payload = (tmp & 0x3FFFFFFF); // rest is payload
+      // dstoe: I was told there is no index passed with the spike, so it's
+      // supposed to be zero.
+      if ( *it != 0) {
+        throw Decode_error(
+            __func__,
+            "fire_one",
+            *it,
+            "The index of the spike/madc sample is supposed to be zero");
+      }
       return ++it;)
 
   template<typename InputIt>
@@ -439,20 +418,6 @@ namespace uni {
         "MSB must be set for wait_for_7");
 
     inst.t = *it & 0x7f;
-    return ++it;
-  }
-
-  template<typename InputIt>
-  InputIt read_fire_one(InputIt it, Fire_one_inst& inst) {
-    if( ! (*it & 0x40) )
-      throw Decode_error(__func__,
-          "fire_one",
-          *it,
-          "opcode must start with 0b01 for fire_one");
-
-    inst.index = *it & 0x3f;
-    ++it;
-    inst.evaddr = *it;
     return ++it;
   }
 
@@ -479,8 +444,7 @@ namespace uni {
   CHECK_INST(rec_start, 1)
   CHECK_INST(rec_stop, 1)
   CHECK_INST(wait_for_7, 1)
-  CHECK_INST(fire, 1 + sizeof(uint64_t) + sizeof(uint8_t))
-  CHECK_INST(fire_one, 1 + sizeof(uint8_t))
+  CHECK_INST(fire_one, 1 + sizeof(uint64_t) + sizeof(uint8_t))
 
   template<typename InputIt>
   bool check_raw(InputIt a, InputIt stop) {

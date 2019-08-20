@@ -14,16 +14,30 @@ def configure(conf):
     conf.load('compiler_cxx')
     conf.load('gtest')
 
+    conf.check_cxx(mandatory=True,
+                   header_name='cereal/cereal.hpp'
+    )
+
     conf.env['INCLUDES_UNI'] = [ 'src' ]
 
 
 def build(bld):
     bld.program (
-        target = 'uni_test-main',
+        target = 'uni_v2_test-main',
         source = [
-            'src/test/test-bytewise.cpp',
-            'src/test/test-uni.cpp',
-            'src/test/test-cerealization.cpp',
+            'src/test/v2/test-bytewise.cpp',
+            'src/test/v2/test-uni.cpp',
+            'src/test/v2/test-cerealization.cpp',
+        ],
+        features = 'gtest cxx',
+        use = [ 'UNI' ],
+    )
+
+    bld.program (
+        target = 'uni_v3_test-main',
+        source = [
+            'src/test/v3/test-bytewise.cpp',
+            'src/test/v3/test-uni.cpp',
         ],
         features = 'gtest cxx',
         use = [ 'UNI' ],
@@ -36,5 +50,5 @@ def build(bld):
 
     # install headers
     rel = bld.path.find_node('src')
-    for header in bld.path.ant_glob('src/uni/*.(h|hpp|ipp)'):
+    for header in bld.path.ant_glob('src/uni/**/*.(h|hpp|ipp)'):
         bld.install_as('${PREFIX}/include/%s' % header.path_from(rel), header)

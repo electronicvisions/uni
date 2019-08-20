@@ -2,8 +2,8 @@
 
 #include <ostream>
 
-#include "uni/instructions.h"
-#include "uni/errors.h"
+#include "uni/v2/instructions.h"
+#include "uni/v2/errors.h"
 
 
 namespace uni {

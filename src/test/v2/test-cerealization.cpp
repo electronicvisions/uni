@@ -3,7 +3,7 @@
 
 #include <cereal/archives/json.hpp>
 
-#include "uni/program_builder.h"
+#include "uni/v2/program_builder.h"
 
 TEST(Program_builder, CerealizeCoverage)
 {
