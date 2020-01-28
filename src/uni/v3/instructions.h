@@ -152,6 +152,12 @@ namespace uni {
       : name(name) {
     }
 
+#if __cplusplus >= 201103L
+	/** Implictly-declared copy constructor needs to be explicitly
+	 * default-declared. */
+	Instruction(Instruction const&) = default;
+#endif
+
     /** No-op assignment operator to allow for automatic deduction of
      * assignment operators for derived classes.
      * FIXME (ECM@2016-12-23): This is very unexpected behavior... we shall fix this.
